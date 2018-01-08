@@ -9,6 +9,7 @@
 // While heap is not empty, extract 2 items from heap and add them to the cost
 #include <iostream>
 #include <vector>
+#include <string>
 using namespace std;
 
 class MinHeap
@@ -17,8 +18,10 @@ private:
     static int const DEFAULT_CAPACITY = 20;
     int size;
     int capacity;
-    vector<int> items;
-    bool isLeaf(int index) { return index > (size - 2) / 2; }
+    vector<string> items;
+    bool isLeaf(int index) {
+      if (size == 1) return true;
+      return index > (size - 2) / 2; }
     int getLeftIndex(int index) { return index * 2 + 1; }
     int getRightIndex(int index) { return index * 2 + 2; }
     int getParentIndex(int index) { return (index > size) ? index / 2 : 0; }
@@ -26,11 +29,12 @@ private:
     void rebuildHeap(int parentIndex);
 public:
     MinHeap(): size(0), capacity(DEFAULT_CAPACITY) {}
-    MinHeap(const vector<int>& arr);
-    void add(const int item);
-    int extract();
-}
-
+    MinHeap(const vector<string>& arr);
+    void add(const string item);
+    int getSize() { return size; }
+    string peekTop() const { return items[0]; }
+    string extract();
+};
 //----------
 // Helpers
 //----------
@@ -41,12 +45,12 @@ void MinHeap::rebuildHeap(int parentIndex)
         int smallerChild = getLeftIndex(parentIndex);
         int r = getRightIndex(parentIndex);
         if (r < size) {
-            if (items[r] < items[smallerChild]) smallerChild = r;
+            if (items[r].length() < items[smallerChild].length()) smallerChild = r;
         }
-        if (items[parentIndex] <items[smallerChild]) {
+        if (items[parentIndex].length() > items[smallerChild].length()) {
             swap(items[parentIndex], items[smallerChild]);
-            parentIndex = smallerChild;
         }
+        parentIndex = smallerChild;
     }
 }
 // Pre condition: items is not empty
@@ -58,13 +62,57 @@ void MinHeap::heapify()
     }
 }
 
-MinHeap::MinHeap(const vector<int>& arr)
+MinHeap::MinHeap(const vector<string>& arr)
 {
     items = arr;
+    size = items.size();
+    capacity = size * 2;
     heapify();
 }
 
+string MinHeap::extract()
+{
+    if (size == 0) return "";
+    string item = items[0];
+    swap(items[0], items[size - 1]);
+    size--;
+    rebuildHeap(0);
+    return item;
+}
+
+void MinHeap::add(const string item)
+{
+    int index = size;
+    items[index] = item;
+    size++;
+    bool inPlace = false;
+    while (!inPlace && index > 0) {
+        int parentIndex = getParentIndex(index);
+        if (items[parentIndex].length() > items[index].length()) {
+            swap(items[parentIndex], items[index]);
+            index = parentIndex;
+        }
+        else {
+            inPlace = true;
+        }
+    }
+}
+
+int minCost(MinHeap& heap)
+{
+    int cost = 0;
+    while (heap.getSize() > 1) {
+        string str1 = heap.extract();
+        string str2 = heap.extract();
+        cost += str1.length() + str2.length();
+        heap.add(str1+str2);
+    }
+    return cost;
+}
 int main()
 {
-    vector<int> s_arrs = { }
+    vector<string> s_arrs = { "abc", "cd", "cded", "thjfkk", "a"};
+    MinHeap heap(s_arrs);
+    cout << minCost(heap) << endl;
+    return 0;
 }
