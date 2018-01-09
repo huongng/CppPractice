@@ -4,6 +4,7 @@
  **/
 #include <iostream>
 #include <vector>
+#include <algorithm>
 using namespace std;
 
 struct Node
@@ -24,11 +25,11 @@ private:
     Node* root;
     int size;
     void insert(int data, int index, Node* node);
-    void inorder(Node* node, Node* tracks[]&, int& index);
+    void inorder(Node* node, vector<Node*>& tracks);
 public:
     BST() : root(nullptr) {}
     void insert(int data, int index);
-    void inorder(Node* tracks[]&, int& index);
+    void inorder(vector<Node*>& tracks);
     int getSize() { return size; }
 };
 
@@ -67,19 +68,23 @@ void BST::insert(int data, int index, Node* node)
         }
     }
 }
-void BST::inorder(Node* tracks[]&, int& index)
+void BST::inorder(vector<Node*>& tracks)
 {
     if (root == nullptr) return;
-    inorder(root, tracks, index);
+    inorder(root, tracks);
 }
-void BST::inorder(Node* node, Node* tracks[]&, int& index)
+void BST::inorder(Node* node, vector<Node*>& tracks)
 {
     if (node == nullptr) return;
-    inorder(node->left, tracks, index);
-    cout << node->id <<endl;
-    tracks[index++] = node;
-    cout << tracks[index] << endl;
-    inorder(node->right, tracks, index);
+    inorder(node->left, tracks);
+    tracks.push_back(node);
+    inorder(node->right, tracks);
+}
+
+bool compare(Node* n1, Node* n2)
+{
+    if (n1->freq == n2->freq) return n1->index < n2->index;
+    return n1->freq > n2->freq;
 }
 
 void sortByFrequency(vector<int>& arr)
@@ -90,15 +95,27 @@ void sortByFrequency(vector<int>& arr)
         tree.insert(arr[i], i);
     }
     // Traverse inorder and put frequency in a 2-D array of (frequency, Node*)
-    Node* tracks[tree.getSize()];
-    int index = 0;
-    tree.inorder(tracks, index);
-    //cout << tracks[0]->id << endl;
-    //cout << index << endl;
+    vector<Node*> tracks;
+    tree.inorder(tracks);
+    // sort vector based on frequency
+    // if frequency is the same, sort by index
+    sort(tracks.begin(), tracks.end(), compare);
+    int i = 0;
+    for (auto p = tracks.begin(); p != tracks.end(); p++) {
+      int frequency = (*p)->freq;
+      while (frequency--) {
+        arr[i] = (*p)->id;
+        i++;
+      }
+    }
 }
 int main()
 {
     vector<int> arr = {4, 5, 2, 6, 3, 5, 3, 4, 1, 3, 5};
     sortByFrequency(arr);
+    for (auto p = arr.begin(); p != arr.end(); p++) {
+      cout << *p << " ";
+    }
+    cout << endl;
     return 0;
 }
