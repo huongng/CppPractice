@@ -20,8 +20,8 @@ private:
     int capacity;
     vector<string> items;
     bool isLeaf(int index) {
-      if (size == 1) return true;
-      return index > (size - 2) / 2; }
+        if (size == 1) return true;
+        return index > (size - 2) / 2; }
     int getLeftIndex(int index) { return index * 2 + 1; }
     int getRightIndex(int index) { return index * 2 + 2; }
     int getParentIndex(int index) { return (index > size) ? index / 2 : 0; }
